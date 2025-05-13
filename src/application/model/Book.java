@@ -1,25 +1,33 @@
-package application;
+package application.model;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 
-class Book {
+public class Book {
+    private Integer id;
     private String title;
     private String author;
     private int year;
     private String genre;
     private String url;
-    private BooleanProperty isRead;
     private BooleanProperty isAvailable;
 
-    public Book(String title, String author, int year, String genre, String url) {
+    public Book(Integer id, String title, String author, int year, String genre, String url, boolean isAvailable) {
+        this.id = id;
         this.title = title;
         this.author = author;
         this.year = year;
         this.genre = genre;
         this.url = url;
-        this.isRead = new SimpleBooleanProperty(false);
-        this.isAvailable = new SimpleBooleanProperty(true);
+        this.isAvailable = new SimpleBooleanProperty(isAvailable);
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public String getTitle() {
@@ -40,10 +48,6 @@ class Book {
 
     public String getUrl() {
         return url;
-    }
-
-    public boolean isRead() {
-        return isRead.get();
     }
 
     public boolean isAvailable() {
@@ -70,17 +74,11 @@ class Book {
         this.url = url;
     }
 
-    public void setRead(boolean read) {
-        isRead.set(read);
-    }
 
     public void setAvailable(boolean available) {
         isAvailable.set(available);
     }
 
-    public BooleanProperty isReadProperty() {
-        return isRead;
-    }
 
     public BooleanProperty isAvailableProperty() {
         return isAvailable;

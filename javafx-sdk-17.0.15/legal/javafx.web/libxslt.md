@@ -90,7 +90,7 @@ Daniel Veillard:
    Used to work at W3C, now Red Hat
    co-chair of W3C XML Linking WG
    invited expert on the W3C XML Core WG
-   Author of libxml2 upon which this library is based.
+   Author of libxml2 upon which this bookService is based.
 
 Bjorn Reese:
    breese@users.sourceforge.net

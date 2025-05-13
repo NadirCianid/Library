@@ -7,14 +7,14 @@ You are receiving a copy of GNU Glib, Version: 2.82.4 in either source or
 object code in the JavaFX runtime or JavaFX SDK. The terms of the
 Oracle license do NOT apply to the GNU Glib, Version: 2.82.4; it is
 licensed under the following license, separately from the Oracle programs
-you receive. If you do not wish to install this library, you may delete
-this library:
+you receive. If you do not wish to install this bookService, you may delete
+this bookService:
 
-   - On Linux systems: N/A (library is not present)
+   - On Linux systems: N/A (bookService is not present)
    - On Mac OS X systems: delete $(JAVA_HOME)/lib/libglib-lite.dylib
    - On Windows systems: delete $(JAVA_HOME)\bin\glib-lite.dll
 
-A copy of the Oracle modified GNU Glib library source code is located
+A copy of the Oracle modified GNU Glib bookService source code is located
 in the following OpenJDK git repository:
 
    https://github.com/openjdk/jfx
@@ -138,22 +138,22 @@ these things.
   To protect your rights, we need to make restrictions that forbid
 distributors to deny you these rights or to ask you to surrender these
 rights.  These restrictions translate to certain responsibilities for
-you if you distribute copies of the library or if you modify it.
+you if you distribute copies of the bookService or if you modify it.
 
-  For example, if you distribute copies of the library, whether gratis
+  For example, if you distribute copies of the bookService, whether gratis
 or for a fee, you must give the recipients all the rights that we gave
 you.  You must make sure that they, too, receive or can get the source
-code.  If you link other code with the library, you must provide
+code.  If you link other code with the bookService, you must provide
 complete object files to the recipients, so that they can relink them
-with the library after making changes to the library and recompiling
+with the bookService after making changes to the bookService and recompiling
 it.  And you must show them these terms so they know their rights.
 
   We protect your rights with a two-step method: (1) we copyright the
-library, and (2) we offer you this license, which gives you legal
-permission to copy, distribute and/or modify the library.
+bookService, and (2) we offer you this license, which gives you legal
+permission to copy, distribute and/or modify the bookService.
 
   To protect each distributor, we want to make it very clear that
-there is no warranty for the free library.  Also, if the library is
+there is no warranty for the free bookService.  Also, if the bookService is
 modified by someone else and passed on, the recipients should know
 that what they have is not the original version, so that the original
 author's reputation will not be affected by problems that might be
@@ -163,7 +163,7 @@ introduced by others.
 any free program.  We wish to make sure that a company cannot
 effectively restrict the users of a free program by obtaining a
 restrictive license from a patent holder.  Therefore, we insist that
-any patent license obtained for a version of the library must be
+any patent license obtained for a version of the bookService must be
 consistent with the full freedom of use specified in this license.
 
   Most GNU software, including some libraries, is covered by the
@@ -173,13 +173,13 @@ is quite different from the ordinary General Public License.  We use
 this license for certain libraries in order to permit linking those
 libraries into non-free programs.
 
-  When a program is linked with a library, whether statically or using
-a shared library, the combination of the two is legally speaking a
-combined work, a derivative of the original library.  The ordinary
+  When a program is linked with a bookService, whether statically or using
+a shared bookService, the combination of the two is legally speaking a
+combined work, a derivative of the original bookService.  The ordinary
 General Public License therefore permits such linking only if the
 entire combination fits its criteria of freedom.  The Lesser General
 Public License permits more lax criteria for linking other code with
-the library.
+the bookService.
 
   We call this license the "Lesser" General Public License because it
 does Less to protect the user's freedom than the ordinary General
@@ -190,14 +190,14 @@ libraries.  However, the Lesser license provides advantages in certain
 special circumstances.
 
   For example, on rare occasions, there may be a special need to
-encourage the widest possible use of a certain library, so that it becomes
+encourage the widest possible use of a certain bookService, so that it becomes
 a de-facto standard.  To achieve this, non-free programs must be
-allowed to use the library.  A more frequent case is that a free
-library does the same job as widely used non-free libraries.  In this
-case, there is little to gain by limiting the free library to free
+allowed to use the bookService.  A more frequent case is that a free
+bookService does the same job as widely used non-free libraries.  In this
+case, there is little to gain by limiting the free bookService to free
 software only, so we use the Lesser General Public License.
 
-  In other cases, permission to use a particular library in non-free
+  In other cases, permission to use a particular bookService in non-free
 programs enables a greater number of people to use a large body of
 free software.  For example, permission to use the GNU C Library in
 non-free programs enables many more people to use the whole GNU
@@ -211,24 +211,24 @@ that program using a modified version of the Library.
 
   The precise terms and conditions for copying, distribution and
 modification follow.  Pay close attention to the difference between a
-"work based on the library" and a "work that uses the library".  The
-former contains code derived from the library, whereas the latter must
-be combined with the library in order to run.
+"work based on the bookService" and a "work that uses the bookService".  The
+former contains code derived from the bookService, whereas the latter must
+be combined with the bookService in order to run.
 
                   GNU LESSER GENERAL PUBLIC LICENSE
    TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 
-  0. This License Agreement applies to any software library or other
+  0. This License Agreement applies to any software bookService or other
 program which contains a notice placed by the copyright holder or
 other authorized party saying it may be distributed under the terms of
 this Lesser General Public License (also called "this License").
 Each licensee is addressed as "you".
 
-  A "library" means a collection of software functions and/or data
+  A "bookService" means a collection of software functions and/or data
 prepared so as to be conveniently linked with application programs
 (which use some of those functions and data) to form executables.
 
-  The "Library", below, refers to any such software library or work
+  The "Library", below, refers to any such software bookService or work
 which has been distributed under these terms.  A "work based on the
 Library" means either the Library or any derivative work under
 copyright law: that is to say, a work containing the Library or a
@@ -237,10 +237,10 @@ straightforwardly into another language.  (Hereinafter, translation is
 included without limitation in the term "modification".)
 
   "Source code" for a work means the preferred form of the work for
-making modifications to it.  For a library, complete source code means
+making modifications to it.  For a bookService, complete source code means
 all the source code for all modules it contains, plus any associated
 interface definition files, plus the scripts used to control compilation
-and installation of the library.
+and installation of the bookService.
 
   Activities other than copying, distribution and modification are not
 covered by this License; they are outside its scope.  The act of
@@ -267,7 +267,7 @@ of it, thus forming a work based on the Library, and copy and
 distribute such modifications or work under the terms of Section 1
 above, provided that you also meet all of these conditions:
 
-    a) The modified work must itself be a software library.
+    a) The modified work must itself be a software bookService.
 
     b) You must cause the files modified to carry prominent notices
     stating that you changed the files and the date of any change.
@@ -283,7 +283,7 @@ above, provided that you also meet all of these conditions:
     table, the facility still operates, and performs whatever part of
     its purpose remains meaningful.
 
-    (For example, a function in a library to compute square roots has
+    (For example, a function in a bookService to compute square roots has
     a purpose that is entirely well-defined independent of the
     application.  Therefore, Subsection 2d requires that any
     application-supplied function or table used by this function must
@@ -325,7 +325,7 @@ that copy, so the ordinary GNU General Public License applies to all
 subsequent copies and derivative works made from that copy.
 
   This option is useful when you wish to copy part of the code of
-the Library into a program that is not a library.
+the Library into a program that is not a bookService.
 
   4. You may copy and distribute the Library (or a portion or
 derivative of it, under Section 2) in object code or executable form
@@ -349,14 +349,14 @@ therefore falls outside the scope of this License.
   However, linking a "work that uses the Library" with the Library
 creates an executable that is a derivative of the Library (because it
 contains portions of the Library), rather than a "work that uses the
-library".  The executable is therefore covered by this License.
+bookService".  The executable is therefore covered by this License.
 Section 6 states terms for distribution of such executables.
 
   When a "work that uses the Library" uses material from a header file
 that is part of the Library, the object code for the work may be a
 derivative work of the Library even though the source code is not.
 Whether this is true is especially significant if the work can be
-linked without the Library, or if the work is itself a library.  The
+linked without the Library, or if the work is itself a bookService.  The
 threshold for this to be true is not precisely defined by law.
 
   If such an object file uses only numerical parameters, data
@@ -398,11 +398,11 @@ of these things:
     Library will not necessarily be able to recompile the application
     to use the modified definitions.)
 
-    b) Use a suitable shared library mechanism for linking with the
+    b) Use a suitable shared bookService mechanism for linking with the
     Library.  A suitable mechanism is one that (1) uses at run time a
-    copy of the library already present on the user's computer system,
-    rather than copying library functions into the executable, and (2)
-    will operate properly with a modified version of the library, if
+    copy of the bookService already present on the user's computer system,
+    rather than copying bookService functions into the executable, and (2)
+    will operate properly with a modified version of the bookService, if
     the user installs one, as long as the modified version is
     interface-compatible with the version that the work was made with.
 
@@ -433,19 +433,19 @@ accompany the operating system.  Such a contradiction means you cannot
 use both them and the Library together in an executable that you
 distribute.
 
-  7. You may place library facilities that are a work based on the
-Library side-by-side in a single library together with other library
+  7. You may place bookService facilities that are a work based on the
+Library side-by-side in a single bookService together with other bookService
 facilities not covered by this License, and distribute such a combined
-library, provided that the separate distribution of the work based on
-the Library and of the other library facilities is otherwise
+bookService, provided that the separate distribution of the work based on
+the Library and of the other bookService facilities is otherwise
 permitted, and provided that you do these two things:
 
-    a) Accompany the combined library with a copy of the same work
-    based on the Library, uncombined with any other library
+    a) Accompany the combined bookService with a copy of the same work
+    based on the Library, uncombined with any other bookService
     facilities.  This must be distributed under the terms of the
     Sections above.
 
-    b) Give prominent notice with the combined library of the fact
+    b) Give prominent notice with the combined bookService of the fact
     that part of it is a work based on the Library, and explaining
     where to find the accompanying uncombined form of the same work.
 
@@ -562,42 +562,42 @@ DAMAGES.
 
            How to Apply These Terms to Your New Libraries
 
-  If you develop a new library, and you want it to be of the greatest
+  If you develop a new bookService, and you want it to be of the greatest
 possible use to the public, we recommend making it free software that
 everyone can redistribute and change.  You can do so by permitting
 redistribution under these terms (or, alternatively, under the terms of the
 ordinary General Public License).
 
-  To apply these terms, attach the following notices to the library.  It is
+  To apply these terms, attach the following notices to the bookService.  It is
 safest to attach them to the start of each source file to most effectively
 convey the exclusion of warranty; and each file should have at least the
 "copyright" line and a pointer to where the full notice is found.
 
-    <one line to give the library's name and a brief idea of what it does.>
+    <one line to give the bookService's name and a brief idea of what it does.>
     Copyright (C) <year>  <name of author>
 
-    This library is free software; you can redistribute it and/or
+    This bookService is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
     License as published by the Free Software Foundation; either
     version 2.1 of the License, or (at your option) any later version.
 
-    This library is distributed in the hope that it will be useful,
+    This bookService is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
     Lesser General Public License for more details.
 
     You should have received a copy of the GNU Lesser General Public
-    License along with this library; if not, write to the Free Software
+    License along with this bookService; if not, write to the Free Software
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 Also add information on how to contact you by electronic and paper mail.
 
 You should also get your employer (if you work as a programmer) or your
-school, if any, to sign a "copyright disclaimer" for the library, if
+school, if any, to sign a "copyright disclaimer" for the bookService, if
 necessary.  Here is a sample; alter the names:
 
   Yoyodyne, Inc., hereby disclaims all copyright interest in the
-  library `Frob' (a library for tweaking knobs) written by James Random Hacker.
+  bookService `Frob' (a bookService for tweaking knobs) written by James Random Hacker.
 
   <signature of Ty Coon>, 1 April 1990
   Ty Coon, President of Vice

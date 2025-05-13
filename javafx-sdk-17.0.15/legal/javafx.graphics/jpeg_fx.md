@@ -36,7 +36,7 @@ full responsibility for any undesirable consequences; the authors accept
 NO LIABILITY for damages of any kind.
 
 These conditions apply to any software derived from or based on the IJG code,
-not just to the unmodified library.  If you use our work, you ought to
+not just to the unmodified bookService.  If you use our work, you ought to
 acknowledge us.
 
 Permission is NOT granted for the use of any IJG author's name or company name

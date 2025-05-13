@@ -1,8 +1,15 @@
 // UserInterface.java
 package application;
 
+import application.bd.DBInitException;
+import application.bd.DataSource;
+import application.model.Admin;
+import application.model.Book;
+import application.model.FavouriteBook;
+import application.model.User;
 import javafx.application.Application;
 import javafx.application.HostServices;
+import javafx.application.Platform;
 import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -14,7 +21,7 @@ import javafx.stage.Stage;
 
 public class Main extends Application {
     private UserService userService;
-    private LibraryService libraryService;
+    private BookService bookService;
     private Stage primaryStage;
     private HostServices hostServices;
 
@@ -24,12 +31,17 @@ public class Main extends Application {
 
     @Override
     public void init() {
-        libraryService = new LibraryService();
-        userService = new UserService();
+        try {
+            DataSource.initializeDataBase();
+        } catch (DBInitException e) {
+            Platform.runLater(() -> {
+                showAlert("Data source is unavailable", "Unable to connect to database. Please contact the admin.");
+                Platform.exit();
+            });
+        }
 
-        // Инициализация тестовых данных
-        libraryService.initializeSampleData();
-        userService.initializeSampleData();
+        bookService = new BookService(DataSource.getConn());
+        userService = new UserService(DataSource.getConn());
     }
 
     @Override
@@ -83,9 +95,9 @@ public class Main extends Application {
         Label adminLabel = new Label("Welcome, Admin!");
 
         ListView<Book> bookListView = new ListView<>();
-        bookListView.setItems(libraryService.getAllBooks());
+        bookListView.setItems(bookService.getAllBooks());
 
-        bookListView.setCellFactory(lv -> new ListCell<Book>() {
+        bookListView.setCellFactory(lv -> new ListCell<>() {
             @Override
             protected void updateItem(Book book, boolean empty) {
                 super.updateItem(book, empty);
@@ -98,8 +110,8 @@ public class Main extends Application {
                     Button toggleAvailabilityButton = new Button(book.isAvailable() ? "Mark as Unavailable" : "Mark as Available");
 
                     toggleAvailabilityButton.setOnAction(e -> {
-                        libraryService.toggleBookAvailability(book);
-                        bookListView.refresh();
+                        bookService.toggleBookAvailability(book);
+                        bookListView.setItems(bookService.getAllBooks());
                     });
 
                     hbox.getChildren().addAll(label, toggleAvailabilityButton);
@@ -115,8 +127,8 @@ public class Main extends Application {
         removeBookButton.setOnAction(e -> {
             Book selectedBook = bookListView.getSelectionModel().getSelectedItem();
             if (selectedBook != null) {
-                libraryService.removeBook(selectedBook);
-                bookListView.refresh();
+                bookService.removeBook(selectedBook);
+                bookListView.setItems(bookService.getAllBooks());
                 showAlert("Book Removed", "The book has been removed from the library.");
             } else {
                 showAlert("Error", "Please select a book to remove.");
@@ -157,13 +169,15 @@ public class Main extends Application {
             try {
                 int year = Integer.parseInt(yearField.getText());
                 Book newBook = new Book(
+                        null,
                         titleField.getText(),
                         authorField.getText(),
                         year,
                         genreField.getText(),
-                        urlField.getText()
+                        urlField.getText(),
+                        true
                 );
-                libraryService.addBook(newBook);
+                bookService.addBook(newBook);
                 showAlert("Book Added", "The book has been added to the library.");
             } catch (NumberFormatException ex) {
                 showAlert("Error", "Please enter a valid year.");
@@ -241,10 +255,10 @@ public class Main extends Application {
         searchBox.getChildren().addAll(new Label("Search Books"), titleField, authorField, yearField, genreField, searchButton);
 
         ListView<Book> bookListView = new ListView<>();
-        FilteredList<Book> filteredBooks = libraryService.searchBooks("", "", null, "");
+        FilteredList<Book> filteredBooks = bookService.searchBooks("", "", null, "");
         bookListView.setItems(filteredBooks);
 
-        bookListView.setCellFactory(lv -> new ListCell<Book>() {
+        bookListView.setCellFactory(lv -> new ListCell<>() {
             @Override
             protected void updateItem(Book book, boolean empty) {
                 super.updateItem(book, empty);
@@ -290,16 +304,6 @@ public class Main extends Application {
         buttonBox.getChildren().addAll(addToFavoritesButton, viewFavoritesButton, logoutButton);
 
         searchButton.setOnAction(e -> {
-            Integer year = null;
-            try {
-                if (!yearField.getText().isEmpty()) {
-                    year = Integer.parseInt(yearField.getText());
-                }
-            } catch (NumberFormatException ex) {
-                showAlert("Error", "Year must be a number");
-                return;
-            }
-
             filteredBooks.setPredicate(book -> {
                 boolean matchesTitle = book.getTitle().toLowerCase().contains(titleField.getText().toLowerCase());
                 boolean matchesAuthor = book.getAuthor().toLowerCase().contains(authorField.getText().toLowerCase());
@@ -309,7 +313,7 @@ public class Main extends Application {
                 if (!yearField.getText().isEmpty()) {
                     try {
                         int yearValue = Integer.parseInt(yearField.getText());
-                        matchesYear = book.getYear() == yearValue;
+
                     } catch (NumberFormatException ex) {
                         matchesYear = false;
                     }
@@ -337,25 +341,25 @@ public class Main extends Application {
         root.setAlignment(Pos.CENTER);
         root.setStyle("-fx-padding: 15;");
 
-        ListView<Book> favoritesList = new ListView<>(userService.getFavorites(user));
-        favoritesList.setCellFactory(lv -> new ListCell<Book>() {
+        ListView<FavouriteBook> favoritesList = new ListView<>(userService.getFavorites(user));
+        favoritesList.setCellFactory(lv -> new ListCell<>() {
             @Override
-            protected void updateItem(Book book, boolean empty) {
-                super.updateItem(book, empty);
-                if (empty || book == null) {
+            protected void updateItem(FavouriteBook favouriteBook, boolean empty) {
+                super.updateItem(favouriteBook, empty);
+                if (empty || favouriteBook == null) {
                     setText(null);
                     setGraphic(null);
                 } else {
                     HBox hbox = new HBox(10);
                     CheckBox readCheck = new CheckBox("Read");
-                    readCheck.setSelected(book.isRead());
-                    readCheck.selectedProperty().bindBidirectional(book.isReadProperty());
+                    readCheck.setSelected(favouriteBook.isRead());
+                    readCheck.selectedProperty().bindBidirectional(favouriteBook.isReadProperty());
                     Button removeBtn = new Button("Remove");
                     removeBtn.setOnAction(e -> {
-                        userService.removeFromFavorites(user, book);
+                        userService.removeFromFavorites(favouriteBook);
                         favoritesList.refresh();
                     });
-                    hbox.getChildren().addAll(new Label(book.getTitle()), readCheck, removeBtn);
+                    hbox.getChildren().addAll(new Label(favouriteBook.getBook().getTitle()), readCheck, removeBtn);
                     setGraphic(hbox);
                 }
             }
