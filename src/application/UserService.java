@@ -2,16 +2,10 @@
 package application;
 
 import application.model.Admin;
-import application.model.Book;
-import application.model.FavouriteBook;
 import application.model.User;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
 
 import java.sql.*;
-import java.util.HashMap;
-import java.util.Map;
 
 public class UserService {
     private final Connection connection;
@@ -84,70 +78,6 @@ public class UserService {
             return true;
         }
         return false;
-    }
-
-    public void addToFavorites(User user, Book book) {
-        if (user == null || book == null) return;
-
-        String sql = """
-                INSERT INTO user_favorites (user_id, book_id, is_read) VALUES (?, ?, ?)
-                ON CONFLICT (user_id, book_id) DO UPDATE SET is_read = EXCLUDED.is_read""";
-
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setInt(1, user.getId());
-            pstmt.setInt(2, book.getId());
-            pstmt.setBoolean(3, false);
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            showAlert("Error", "Failed to add book to favorites");
-        }
-    }
-
-    public void removeFromFavorites(FavouriteBook favouriteBook) {
-        if (favouriteBook == null || favouriteBook.getBook() == null || favouriteBook.getUser() == null) return;
-
-        String sql = "DELETE FROM user_favorites WHERE user_id = ? AND book_id = ?";
-
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setInt(1, favouriteBook.getUser().getId());
-            pstmt.setInt(2, favouriteBook.getBook().getId());
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            showAlert("Error", "Failed to remove book from favorites");
-        }
-    }
-
-    public ObservableList<FavouriteBook> getFavorites(User user) {
-        if (user == null) return FXCollections.emptyObservableList();
-
-        ObservableList<FavouriteBook> favorites = FXCollections.observableArrayList();
-        String sql = """
-                SELECT b.*, uf.is_read FROM books b
-                JOIN user_favorites uf ON b.id = uf.book_id
-                WHERE uf.user_id = ?""";
-
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setInt(1, user.getId());
-            ResultSet rs = pstmt.executeQuery();
-
-            while (rs.next()) {
-                Book book = new Book(
-                        rs.getInt("id"),
-                        rs.getString("title"),
-                        rs.getString("author"),
-                        rs.getInt("year"),
-                        rs.getString("genre"),
-                        rs.getString("url"),
-                        rs.getBoolean("is_available")
-                );
-                favorites.add(new FavouriteBook(user, book, rs.getBoolean("is_read")));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            showAlert("Error", "Failed to load favorites");
-        }
-
-        return favorites;
     }
 
     private boolean userExists(String username) {

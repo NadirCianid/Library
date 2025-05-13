@@ -3,25 +3,29 @@ package application;
 
 import application.bd.DBInitException;
 import application.bd.DataSource;
-import application.model.Admin;
-import application.model.Book;
-import application.model.FavouriteBook;
-import application.model.User;
+import application.model.*;
 import javafx.application.Application;
 import javafx.application.HostServices;
 import javafx.application.Platform;
 import javafx.collections.transformation.FilteredList;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Pair;
+
+import java.util.Optional;
 
 public class Main extends Application {
     private UserService userService;
     private BookService bookService;
+    private ReviewService reviewService;
+    private FavouritesService favouritesService;
     private Stage primaryStage;
     private HostServices hostServices;
 
@@ -42,6 +46,8 @@ public class Main extends Application {
 
         bookService = new BookService(DataSource.getConn());
         userService = new UserService(DataSource.getConn());
+        reviewService = new ReviewService(DataSource.getConn());
+        favouritesService = new FavouritesService(DataSource.getConn());
     }
 
     @Override
@@ -234,7 +240,7 @@ public class Main extends Application {
     private void showUserMode(User user) {
         Stage userStage = new Stage();
         BorderPane root = new BorderPane();
-        root.setPrefSize(800, 500);
+        root.setPrefSize(1000, 500);
 
         VBox searchBox = new VBox(10);
         searchBox.setPrefWidth(300);
@@ -267,14 +273,30 @@ public class Main extends Application {
                     setGraphic(null);
                 } else {
                     HBox hbox = new HBox(10);
+                    // Label с информацией о книге
                     Label label = new Label(book.toString());
+                    label.setPrefWidth(500);
+
+                    // Кнопка Open
                     Button openButton = new Button("Open");
                     openButton.setOnAction(e -> {
                         if (hostServices != null && book.getUrl() != null && !book.getUrl().isEmpty()) {
                             hostServices.showDocument(book.getUrl());
                         }
                     });
-                    hbox.getChildren().addAll(label, openButton);
+
+                    // Кнопка Review
+                    Button reviewButton = new Button("Review");
+                    reviewButton.setOnAction(e -> {
+                        showReviewDialog(book, user);
+                        bookListView.setItems(bookService.searchBooks("", "", null, ""));
+                        bookListView.refresh();
+                    });
+
+                    //Label с рейтингом книги
+                    Label rating = new Label(book.getRating());
+
+                    hbox.getChildren().addAll(label, openButton, reviewButton, rating);
                     setGraphic(hbox);
                 }
             }
@@ -287,7 +309,7 @@ public class Main extends Application {
         addToFavoritesButton.setOnAction(e -> {
             Book selected = bookListView.getSelectionModel().getSelectedItem();
             if (selected != null) {
-                userService.addToFavorites(user, selected);
+                favouritesService.addToFavorites(user, selected);
                 showAlert("Success", "Book added to favorites");
             }
         });
@@ -304,25 +326,13 @@ public class Main extends Application {
         buttonBox.getChildren().addAll(addToFavoritesButton, viewFavoritesButton, logoutButton);
 
         searchButton.setOnAction(e -> {
-            filteredBooks.setPredicate(book -> {
-                boolean matchesTitle = book.getTitle().toLowerCase().contains(titleField.getText().toLowerCase());
-                boolean matchesAuthor = book.getAuthor().toLowerCase().contains(authorField.getText().toLowerCase());
-                boolean matchesGenre = book.getGenre().toLowerCase().contains(genreField.getText().toLowerCase());
-
-                boolean matchesYear = true;
-                if (!yearField.getText().isEmpty()) {
-                    try {
-                        int yearValue = Integer.parseInt(yearField.getText());
-
-                    } catch (NumberFormatException ex) {
-                        matchesYear = false;
-                    }
-                }
-
-                boolean matchesAvailability = book.isAvailable();
-
-                return matchesTitle && matchesAuthor && matchesYear && matchesGenre && matchesAvailability;
-            });
+            FilteredList<Book> filteredList = bookService.searchBooks(
+                    titleField.getText().toLowerCase(),
+                    authorField.getText().toLowerCase(),
+                    yearField.getText(),
+                    genreField.getText().toLowerCase()
+            );
+            bookListView.setItems(filteredList);
         });
 
         VBox centerBox = new VBox(10, new Label("Available Books"), bookListView, buttonBox);
@@ -335,13 +345,67 @@ public class Main extends Application {
         primaryStage.hide();
     }
 
+    private void showReviewDialog(Book book, User user) {
+        Dialog<ReviewData> dialog = new Dialog<>();
+        dialog.setTitle("Review Book");
+        dialog.setHeaderText("Review for: " + book.toString());
+
+        // Установка кнопок
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        // Создание содержимого
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+
+        // Элементы формы
+        Spinner<Integer> ratingSpinner = new Spinner<>(1, 5, 3);
+        TextArea reviewText = new TextArea();
+        reviewText.setPromptText("Enter your review here...");
+
+        CheckBox isReadCheckBox = new CheckBox();
+
+        // Добавляем элементы в grid
+        grid.add(new Label("Rating (1-5):"), 0, 0);
+        grid.add(ratingSpinner, 1, 0);
+        grid.add(new Label("Read:"), 0, 1);
+        grid.add(isReadCheckBox, 1, 1);
+        grid.add(new Label("Review:"), 0, 2);
+        grid.add(reviewText, 1, 2);
+
+        dialog.getDialogPane().setContent(grid);
+
+        // Преобразование результата
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == ButtonType.OK) {
+                return new ReviewData(
+                        user,
+                        book,
+                        ratingSpinner.getValue(),
+                        reviewText.getText(),
+                        isReadCheckBox.isSelected()
+                );
+            }
+            return null;
+        });
+
+        // Обработка результата
+        Optional<ReviewData> result = dialog.showAndWait();
+
+        result.ifPresent(review -> {
+            // Сохранение отзыва в базу данных
+            reviewService.saveReview(review);
+        });
+    }
+
     private void showFavoritesWindow(User user) {
         Stage stage = new Stage();
         VBox root = new VBox(10);
         root.setAlignment(Pos.CENTER);
         root.setStyle("-fx-padding: 15;");
 
-        ListView<FavouriteBook> favoritesList = new ListView<>(userService.getFavorites(user));
+        ListView<FavouriteBook> favoritesList = new ListView<>(favouritesService.getFavorites(user));
         favoritesList.setCellFactory(lv -> new ListCell<>() {
             @Override
             protected void updateItem(FavouriteBook favouriteBook, boolean empty) {
@@ -351,15 +415,28 @@ public class Main extends Application {
                     setGraphic(null);
                 } else {
                     HBox hbox = new HBox(10);
-                    CheckBox readCheck = new CheckBox("Read");
-                    readCheck.setSelected(favouriteBook.isRead());
-                    readCheck.selectedProperty().bindBidirectional(favouriteBook.isReadProperty());
-                    Button removeBtn = new Button("Remove");
-                    removeBtn.setOnAction(e -> {
-                        userService.removeFromFavorites(favouriteBook);
+                    hbox.setAlignment(Pos.CENTER_LEFT);
+
+                    // Создаем выпадающий список для статуса чтения
+                    ComboBox<BookReadingStatus> statusCombo = new ComboBox<>();
+                    statusCombo.getItems().addAll(BookReadingStatus.values());
+                    statusCombo.setValue(favouriteBook.getStatus());
+                    statusCombo.setPrefWidth(120);
+
+                    // Обработчик изменения статуса
+                    statusCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
+                        favouritesService.updateReadingStatus(favouriteBook, newVal);
+                        favoritesList.setItems(favouritesService.getFavorites(user));
                         favoritesList.refresh();
                     });
-                    hbox.getChildren().addAll(new Label(favouriteBook.getBook().getTitle()), readCheck, removeBtn);
+
+                    Button removeBtn = new Button("Remove");
+                    removeBtn.setOnAction(e -> {
+                        favouritesService.removeFromFavorites(favouriteBook);
+                        favoritesList.setItems(favouritesService.getFavorites(user));
+                        favoritesList.refresh();
+                    });
+                    hbox.getChildren().addAll(new Label(favouriteBook.getBook().getTitle()), statusCombo, removeBtn);
                     setGraphic(hbox);
                 }
             }

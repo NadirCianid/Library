@@ -11,6 +11,7 @@ public class Book {
     private String genre;
     private String url;
     private BooleanProperty isAvailable;
+    private String rating;
 
     public Book(Integer id, String title, String author, int year, String genre, String url, boolean isAvailable) {
         this.id = id;
@@ -20,6 +21,7 @@ public class Book {
         this.genre = genre;
         this.url = url;
         this.isAvailable = new SimpleBooleanProperty(isAvailable);
+        this.rating = "-.-";
     }
 
     public Integer getId() {
@@ -82,6 +84,14 @@ public class Book {
 
     public BooleanProperty isAvailableProperty() {
         return isAvailable;
+    }
+
+    public String getRating() {
+        return rating;
+    }
+
+    public void setRating(String rating) {
+        this.rating = rating;
     }
 
     @Override

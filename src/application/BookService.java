@@ -16,10 +16,10 @@ public class BookService {
         this.connection = connection;
     }
 
-    public void addBook(Book book)  {
+    public void addBook(Book book) {
         String sql = """
-                INSERT INTO books (title, author, year, genre, url, is_available)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO books (title, author, year, genre, url)
+                VALUES (?, ?, ?, ?, ?)
                 ON CONFLICT ON CONSTRAINT book_unique DO NOTHING""";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -50,7 +50,7 @@ public class BookService {
 
     public ObservableList<Book> getAllBooks() {
         ObservableList<Book> books = FXCollections.observableArrayList();
-        String sql = "SELECT * FROM books";
+        String sql = "SELECT b.*, ba.is_available AS rating FROM books b JOIN book_availability ba ON b.id = ba.book_id";
 
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
@@ -65,9 +65,15 @@ public class BookService {
         return books;
     }
 
-    public FilteredList<Book> searchBooks(String title, String author, Integer year, String genre) {
+    public FilteredList<Book> searchBooks(String title, String author, String year, String genre) {
         List<Book> bookList = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("SELECT * FROM books WHERE is_available = true");
+        StringBuilder sql = new StringBuilder("""
+                SELECT b.*, ba.is_available, COALESCE(AVG(br.rating), 0.0) as rating
+                            FROM books b
+                            JOIN book_availability ba ON b.id = ba.book_id
+                            LEFT JOIN books_reviews br ON b.id = br.book_id
+                            WHERE ba.is_available = true
+                """);
 
         if (title != null && !title.isEmpty()) {
             sql.append(" AND LOWER(title) LIKE LOWER(?)");
@@ -82,6 +88,9 @@ public class BookService {
             sql.append(" AND LOWER(genre) LIKE LOWER(?)");
         }
 
+        // Группируем по книге, чтобы получить средний рейтинг
+        sql.append(" GROUP BY b.id, ba.is_available");
+
         try (PreparedStatement pstmt = connection.prepareStatement(sql.toString())) {
             int paramIndex = 1;
 
@@ -92,7 +101,7 @@ public class BookService {
                 pstmt.setString(paramIndex++, "%" + author + "%");
             }
             if (year != null) {
-                pstmt.setInt(paramIndex++, year);
+                pstmt.setInt(paramIndex++, Integer.parseInt(year));
             }
             if (genre != null && !genre.isEmpty()) {
                 pstmt.setString(paramIndex, "%" + genre + "%");
@@ -100,7 +109,9 @@ public class BookService {
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    bookList.add(resultSetToBook(rs));
+                    Book book = resultSetToBook(rs);
+                    book.setRating(String.format("%1.1f", rs.getDouble("rating")));
+                    bookList.add(book);
                 }
             }
         } catch (SQLException e) {
@@ -123,16 +134,15 @@ public class BookService {
     }
 
     public void toggleBookAvailability(Book book) {
-        if(book == null) {
+        if (book == null) {
             return;
         }
 
-        String sql = "UPDATE books SET is_available = ? WHERE title = ? AND author = ?";
+        String sql = "UPDATE book_availability SET is_available = ? WHERE book_id = ?";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setBoolean(1, !book.isAvailable());
-            pstmt.setString(2, book.getTitle());
-            pstmt.setString(3, book.getAuthor());
+            pstmt.setInt(2, book.getId());
             pstmt.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException("Failed to toggle book availability", e);
