@@ -1,4 +1,3 @@
-// UserInterface.java
 package application;
 
 import application.bd.DBInitException;
@@ -72,8 +71,8 @@ public class Main extends Application {
         loginButton.setOnAction(e -> {
             User user = userService.authenticate(usernameField.getText(), passwordField.getText());
             if (user != null) {
-                if (user instanceof Admin) {
-                    showAdminMode();
+                if (user instanceof Admin admin) {
+                    showAdminMode(admin);
                 } else {
                     showUserMode(user);
                 }
@@ -93,13 +92,30 @@ public class Main extends Application {
         primaryStage.show();
     }
 
-    private void showAdminMode() {
-        VBox root = new VBox(15);
-        root.setAlignment(Pos.CENTER);
-        root.setPrefSize(400, 300);
+    private void showAdminMode(User admin) {
+        Stage adminStage = new Stage();
+        BorderPane root = new BorderPane();
+        root.setPrefSize(1000, 500);
 
-        Label adminLabel = new Label("Welcome, Admin!");
+        // Создаем панель поиска (аналогично пользовательскому интерфейсу)
+        VBox searchBox = new VBox(10);
+        searchBox.setPrefWidth(300);
+        searchBox.setAlignment(Pos.TOP_LEFT);
+        searchBox.setStyle("-fx-padding: 15;");
 
+        TextField titleField = new TextField();
+        titleField.setPromptText("Search by Title");
+        TextField authorField = new TextField();
+        authorField.setPromptText("Search by Author");
+        TextField yearField = new TextField();
+        yearField.setPromptText("Search by Year");
+        TextField genreField = new TextField();
+        genreField.setPromptText("Search by Genre");
+
+        Button searchButton = new Button("Search");
+        searchBox.getChildren().addAll(new Label("Search Books"), titleField, authorField, yearField, genreField, searchButton);
+
+        // Список книг с возможностью управления доступностью
         ListView<Book> bookListView = new ListView<>();
         bookListView.setItems(bookService.getAllBooks());
 
@@ -112,12 +128,14 @@ public class Main extends Application {
                     setGraphic(null);
                 } else {
                     HBox hbox = new HBox(10);
-                    Label label = new Label(book.getTitle() + " - " + (book.isAvailable() ? "Available" : "Not Available"));
-                    Button toggleAvailabilityButton = new Button(book.isAvailable() ? "Mark as Unavailable" : "Mark as Available");
+                    Label label = new Label(book + " - " + (book.isAvailable() ? "Available" : "Not Available"));
+                    label.setPrefWidth(500);
 
+                    Button toggleAvailabilityButton = new Button(book.isAvailable() ? "Mark as Unavailable" : "Mark as Available");
+                    toggleAvailabilityButton.setPrefWidth(150);
                     toggleAvailabilityButton.setOnAction(e -> {
                         bookService.toggleBookAvailability(book);
-                        bookListView.setItems(bookService.getAllBooks());
+                        refreshBookList(bookListView, titleField, authorField, yearField, genreField);
                     });
 
                     hbox.getChildren().addAll(label, toggleAvailabilityButton);
@@ -126,15 +144,20 @@ public class Main extends Application {
             }
         });
 
+        // Панель административных кнопок
+        VBox adminButtons = new VBox(10);
+        adminButtons.setAlignment(Pos.CENTER);
+        adminButtons.setStyle("-fx-padding: 15;");
+
         Button addBookButton = new Button("Add Book");
-        addBookButton.setOnAction(e -> showAddBookScreen());
+        addBookButton.setOnAction(e -> showAddBookScreen(admin));
 
         Button removeBookButton = new Button("Remove Book");
         removeBookButton.setOnAction(e -> {
             Book selectedBook = bookListView.getSelectionModel().getSelectedItem();
             if (selectedBook != null) {
                 bookService.removeBook(selectedBook);
-                bookListView.setItems(bookService.getAllBooks());
+                refreshBookList(bookListView, titleField, authorField, yearField, genreField);
                 showAlert("Book Removed", "The book has been removed from the library.");
             } else {
                 showAlert("Error", "Please select a book to remove.");
@@ -142,17 +165,43 @@ public class Main extends Application {
         });
 
         Button logoutButton = new Button("Logout");
-        logoutButton.setOnAction(e -> showLoginScreen());
+        logoutButton.setOnAction(e -> {
+            adminStage.close();
+            primaryStage.show();
+        });
 
-        root.getChildren().addAll(adminLabel, bookListView, addBookButton, removeBookButton, logoutButton);
+        adminButtons.getChildren().addAll(addBookButton, removeBookButton, logoutButton);
 
-        Scene scene = new Scene(root);
-        primaryStage.setScene(scene);
-        primaryStage.setTitle("Library App - Admin Panel");
-        primaryStage.show();
+        // Обработчик поиска
+        searchButton.setOnAction(e -> {
+            refreshBookList(bookListView, titleField, authorField, yearField, genreField);
+        });
+
+        // Компоновка интерфейса
+        VBox centerBox = new VBox(10, new Label("Book Management"), bookListView, adminButtons);
+        root.setLeft(searchBox);
+        root.setCenter(centerBox);
+
+        adminStage.setScene(new Scene(root));
+        adminStage.setTitle("Admin Panel - " + admin.getUsername());
+        adminStage.show();
+        primaryStage.hide();
     }
 
-    private void showAddBookScreen() {
+    // Вспомогательный метод для обновления списка книг
+    private void refreshBookList(ListView<Book> bookListView, TextField titleField, TextField authorField,
+                                 TextField yearField, TextField genreField) {
+        FilteredList<Book> filteredList = bookService.searchBooks(
+                titleField.getText().toLowerCase(),
+                authorField.getText().toLowerCase(),
+                yearField.getText(),
+                genreField.getText().toLowerCase()
+        );
+        bookListView.setItems(filteredList);
+        bookListView.refresh();
+    }
+
+    private void showAddBookScreen(User user) {
         VBox root = new VBox(15);
         root.setAlignment(Pos.CENTER);
         root.setPrefSize(400, 300);
@@ -183,7 +232,7 @@ public class Main extends Application {
                         urlField.getText(),
                         true
                 );
-                bookService.addBook(newBook);
+                bookService.addBook(newBook, user);
                 showAlert("Book Added", "The book has been added to the library.");
             } catch (NumberFormatException ex) {
                 showAlert("Error", "Please enter a valid year.");
@@ -191,7 +240,7 @@ public class Main extends Application {
         });
 
         Button backButton = new Button("Back");
-        backButton.setOnAction(e -> showAdminMode());
+        backButton.setOnAction(e -> showAdminMode(user));
 
         root.getChildren().addAll(addBookLabel, titleField, authorField, yearField, genreField, urlField, addButton, backButton);
 
@@ -333,6 +382,7 @@ public class Main extends Application {
                     genreField.getText().toLowerCase()
             );
             bookListView.setItems(filteredList);
+            bookListView.refresh();
         });
 
         VBox centerBox = new VBox(10, new Label("Available Books"), bookListView, buttonBox);

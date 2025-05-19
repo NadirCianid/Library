@@ -1,6 +1,7 @@
 package application;
 
 import application.model.Book;
+import application.model.User;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -16,11 +17,19 @@ public class BookService {
         this.connection = connection;
     }
 
-    public void addBook(Book book) {
+    public void addBook(Book book, User user) {
         String sql = """
-                INSERT INTO books (title, author, year, genre, url)
-                VALUES (?, ?, ?, ?, ?)
-                ON CONFLICT ON CONSTRAINT book_unique DO NOTHING""";
+                WITH inserted_book AS (
+                    INSERT INTO books (title, author, year, genre, url)
+                    VALUES (?, ?, ?, ?, ?)
+                    ON CONFLICT ON CONSTRAINT book_unique DO NOTHING
+                    RETURNING id
+                )
+                INSERT INTO book_availability (book_id, is_available, updated_by)
+                SELECT id, false, ?
+                FROM inserted_book
+                ON CONFLICT (book_id) DO NOTHING;
+                """;
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, book.getTitle());
@@ -28,7 +37,7 @@ public class BookService {
             pstmt.setInt(3, book.getYear());
             pstmt.setString(4, book.getGenre());
             pstmt.setString(5, book.getUrl());
-            pstmt.setBoolean(6, book.isAvailable());
+            pstmt.setInt(6, user.getId());
 
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -50,7 +59,7 @@ public class BookService {
 
     public ObservableList<Book> getAllBooks() {
         ObservableList<Book> books = FXCollections.observableArrayList();
-        String sql = "SELECT b.*, ba.is_available AS rating FROM books b JOIN book_availability ba ON b.id = ba.book_id";
+        String sql = "SELECT b.*, is_available FROM books b JOIN book_availability ba ON b.id = ba.book_id";
 
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
@@ -81,7 +90,7 @@ public class BookService {
         if (author != null && !author.isEmpty()) {
             sql.append(" AND LOWER(author) LIKE LOWER(?)");
         }
-        if (year != null) {
+        if (year != null && !year.isEmpty()) {
             sql.append(" AND year = ?");
         }
         if (genre != null && !genre.isEmpty()) {
@@ -100,7 +109,7 @@ public class BookService {
             if (author != null && !author.isEmpty()) {
                 pstmt.setString(paramIndex++, "%" + author + "%");
             }
-            if (year != null) {
+            if (year != null && !year.isEmpty()) {
                 pstmt.setInt(paramIndex++, Integer.parseInt(year));
             }
             if (genre != null && !genre.isEmpty()) {
